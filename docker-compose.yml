@@ -2,12 +2,16 @@ version: "3"
 
 networks:
   default:
-    external:
-      name: external
+    ipam:
+      driver: default
+      config:
+        - subnet: 99.98.0.0/16
 
 services:
   bsc_mainnet:
-    image: zinnionlcc/bsc_geth
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: bsc_mainnet
     hostname: bsc_mainnet
     restart: unless-stopped
@@ -19,43 +23,30 @@ services:
       - "30311:30311/udp"
       - "30311:30311"
     volumes:
-      - ./data/mainnet/:/root/.ethereum/
-      - ./config/mainnet/config.toml:/config.toml
+      - $PWD/data/mainnet/:/root/.ethereum/
+      # - $PWD/config/mainnet/config.toml:/config.toml
     stop_signal: SIGINT
     stop_grace_period: 2m
     command:
-      - bsc
-      - --nousb
-      - --syncmode
-      - full
-      - --gcmode
-      - archive
-      - --nousb
-      - --cache
-      - "8192"
-      - --maxpeers
-      - "100"
-      - --pprof
-      - --rpc
-      - --rpcaddr
-      - "0.0.0.0"
-      - --rpcvhosts
-      - "*"
-      - --rpccorsdomain
-      - "*"
-      - --ws
-      - --wsaddr
-      - "0.0.0.0"
-      - --wsorigins
-      - "*"
-      - --wsapi
-      - eth,net,web3
-      - --wsport
-      - "8547"
-      - --datadir
+      - "geth"
+      - "--datadir"
       - "/root/.ethereum/"
-      - --config
-      - /config.toml
+      - "--config"
+      - "/config.toml"
+      - "--syncmode"
+      - "full"
+      - "--cache"
+      - "8000"
+      - "--rpc.allow-unprotected-txs"
+      - "--txlookuplimit"
+      - "0"
+      - "--tries-verify-mode"
+      - "none"
+      - "--diffblock"
+      - "5000"
+      - "--ethstats"
+      - "binance-smart-chain-node:bscpwd@99.98.0.1:3000"
+      - "--pruneancient"
     logging:
       driver: "json-file"
       options:
@@ -118,3 +109,10 @@ services:
         max-size: "2m"
         max-file: "10"
       
+  netstats:
+    build: ./netstats
+    ports:
+      - 3000:3000
+    environment:
+      WS_SECRET: bscpwd
+    restart: always
