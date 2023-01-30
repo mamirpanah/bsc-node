@@ -30,9 +30,9 @@ docker-compose up -d bsc_mainnet netstats
 ## Check sync status
 
 ```
-docker exec bsc_mainnet bsc attach --exec eth.syncing
+docker exec bsc_mainnet geth attach --exec eth.syncing
 
-docker exec bsc_testnet bsc attach --exec eth.syncing
+docker exec bsc_testnet geth attach --exec eth.syncing
 ```
 
 
